@@ -17,12 +17,6 @@ public class ProductController extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
         throws ServerException, IOException {
-        System.out.println("=== 1. doGet startade ===");
-
-        response.setContentType("text/html;charset=UTF-8");
-        java.io.PrintWriter out = response.getWriter();
-        out.println("<h1>Controllern svarar direkt!</h1>");
-
         try {
             List<ProductInfo> products = ProductService.getAllProducts();
             request.setAttribute("products", products);

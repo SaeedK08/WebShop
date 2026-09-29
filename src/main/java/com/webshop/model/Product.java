@@ -1,6 +1,6 @@
 package com.webshop.model;
 
-import com.webshop.dao.DBProduct;
+import com.webshop.dao.ProductDB;
 
 import java.util.List;
 
@@ -24,7 +24,7 @@ public class Product {
     }
 
     public static List<Product> getAllProducts() {
-        return DBProduct.getAllProducts();
+        return ProductDB.getAllProducts();
     }
 
     public String getName() {
