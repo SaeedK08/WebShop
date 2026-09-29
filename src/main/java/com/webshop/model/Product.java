@@ -5,10 +5,10 @@ import com.webshop.dao.ProductDB;
 import java.util.List;
 
 public class Product {
-    private String name;
-    private String description;
+    private final String name;
+    private final String description;
     private int id;
-    private double price;
+    private final double price;
     private int stock;
     // private Category category;
 
