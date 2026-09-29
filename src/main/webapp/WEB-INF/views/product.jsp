@@ -7,14 +7,13 @@
 </head>
 <body>
     <h1>Våra Produkter</h1>
-
     <table border="1">
         <thead>
             <tr>
                 <th>Namn</th>
                 <th>Beskrivning</th>
                 <th>Pris</th>
-                <th>Status</th>
+                <th>Status och Köp</th>
             </tr>
         </thead>
         <tbody>
@@ -26,7 +25,12 @@
                     <td>
                         <c:choose>
                             <c:when test="${p.inStock}">
-                                Finns i lager
+                                <form action="${pageContext.request.contextPath}/cart" method="post">
+                                    <input type="hidden" name="productId" value="${p.id}">
+                                    <input type="hidden" name="action" value="add">
+                                    <input type="number" name="quantity" value="1" min="1" max="${p.stock}" style="width: 50px;">
+                                    <button type="submit">Köp</button>
+                                </form>
                             </c:when>
                             <c:otherwise>
                                 Slut i lager
@@ -37,5 +41,7 @@
             </c:forEach>
         </tbody>
     </table>
+    <br>
+    <a href="${pageContext.request.contextPath}/cart">Gå till kundvagn</a>
 </body>
 </html>
