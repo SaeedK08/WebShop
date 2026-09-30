@@ -3,6 +3,7 @@ package com.webshop.model;
 import com.webshop.dao.UserDB;
 
 import java.awt.image.DataBufferUShort;
+import java.util.List;
 
 public class User {
     private String username;
@@ -17,8 +18,23 @@ public class User {
         this.role = role;
     }
 
+    public static List<User> getAllUsers() {return UserDB.getAllUsers();}
+
     public static User validateUser(String username, String password) {
         return UserDB.validateUser(username, password);
+    }
+
+    public static boolean changeUserPassword(int userId, String newPassword) {
+        return UserDB.changeUserPassword(userId, newPassword);
+    }
+    public static boolean changeUsername(int userId, String newUsername) {
+        return UserDB.changeUsername(userId, newUsername);
+    }
+    public static boolean changeUserRole(int userId, String newRole) {
+        return UserDB.changeUserRole(userId, newRole);
+    }
+    public static boolean deleteUser(int userId) {
+        return UserDB.deleteUser(userId);
     }
 
     public String getUsername() {return username;}

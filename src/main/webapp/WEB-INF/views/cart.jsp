@@ -50,6 +50,11 @@
                 </tbody>
             </table>
             <h3>Total: <c:out value="${cartInfo.totalCartPrice}" /> SEK</h3>
+            <form action="${pageContext.request.contextPath}/checkout" method="post" style="margin-top: 15px;">
+                <button type="submit" style="padding: 8px 16px; font-weight: bold; cursor: pointer;">
+                    Proceed to Checkout
+                </button>
+            </form>
         </c:otherwise>
     </c:choose>
 
