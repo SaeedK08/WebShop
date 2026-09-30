@@ -21,6 +21,7 @@ public class ProductController extends HttpServlet {
             List<ProductInfo> products = ProductService.getAllProducts();
             request.setAttribute("products", products);
             request.getRequestDispatcher("/WEB-INF/views/product.jsp").forward(request, response);
+            System.out.println("Hello ");
         } catch(Exception e) {
             e.printStackTrace();
             response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Can't fetch products");

@@ -1,6 +1,5 @@
 package com.webshop.service;
 
-import com.webshop.dao.DBProduct;
 import com.webshop.dto.CartInfo;
 import com.webshop.dto.CartItemInfo;
 import com.webshop.model.Cart;
@@ -12,26 +11,44 @@ import java.util.List;
 
 public class CartService {
 
-    // Lägger till en produkt i kundvagnen via databasen
-    public static void addToCart(Cart cart, int productId, int quantity) {
-        Product product = DBProduct.getProductById(productId);
-        if (product != null) {
-            cart.addItem(product, quantity);
+    public static CartInfo addProductToCart(CartInfo cartInfo, int productId, int quantity) {
+        if (quantity <= 0) return null;
+
+        Product productToAdd = Product.getProductById(productId);
+        if (productToAdd == null) return null;
+        Cart cart = new Cart();
+        for (CartItemInfo cinfo : cartInfo.getItems()) {
+            cart.addItem(cinfo.getProductId(), cinfo.getProductName(), cinfo.getPrice(), cinfo.getQuantity());
         }
+        int currentQuantityInCart = cart.getQuantityForProduct(productToAdd.getId());
+        if (currentQuantityInCart + quantity > productToAdd.getStock())  return null;
+
+        cart.addItem(productToAdd.getId(), productToAdd.getName(), productToAdd.getPrice(), quantity);
+
+        List<CartItemInfo> updated = new ArrayList<>();
+        double totalPrice = 0.0;
+        for (CartItem ci : cart.getItems()) {
+            updated.add(new CartItemInfo(ci.getId(), ci.getName(), ci.getPrice(), ci.getQuantity()));
+            totalPrice += ci.getTotalPrice();
+        }
+        return new CartInfo(updated, totalPrice);
     }
 
-    // Konverterar domänmodellen (Cart) till en DTO (CartInfo) för JSP-sidan
-    public static CartInfo getCartInfo(Cart cart) {
-        List<CartItemInfo> itemInfos = new ArrayList<>();
-        for (CartItem item : cart.getItems()) {
-            itemInfos.add(new CartItemInfo(
-                    item.getProduct().getId(),
-                    item.getProduct().getName(),
-                    item.getQuantity(),
-                    item.getProduct().getPrice(),
-                    item.getTotalPrice()
-            ));
+    // Remove the whole item, does not respect quantity
+    public static CartInfo removeCartItem (CartInfo cartInfo, int productId) {
+        Cart cart = new Cart();
+        for (CartItemInfo cinfo : cartInfo.getItems()) {
+            cart.addItem(cinfo.getProductId(), cinfo.getProductName(), cinfo.getPrice(), cinfo.getQuantity()); //[cite: 13]
         }
-        return new CartInfo(itemInfos, cart.getTotalCartPrice());
+
+        cart.removeItem(productId);
+
+        List<CartItemInfo> updated = new ArrayList<>();
+        double totalPrice = 0.0;
+        for (CartItem ci : cart.getItems()) {
+            updated.add(new CartItemInfo(ci.getId(), ci.getName(), ci.getPrice(), ci.getQuantity())); //[cite: 13]
+            totalPrice += ci.getTotalPrice();
+        }
+        return new CartInfo(updated, totalPrice);
     }
 }

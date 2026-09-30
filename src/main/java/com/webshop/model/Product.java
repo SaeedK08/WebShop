@@ -26,6 +26,7 @@ public class Product {
     public static List<Product> getAllProducts() {
         return ProductDB.getAllProducts();
     }
+    public static Product getProductById(int id) { return ProductDB.getProductById(id); }
 
     public String getName() {
         return name;
