@@ -15,8 +15,22 @@ public class ProductService {
                             p.getName(),
                             p.getDescription(),
                             p.getPrice(),
-                            p.getStock()));
+                            p.getStock(),
+                            p.getCategoryId(),
+                            p.getCategoryName()));
         }
         return dtoList;
     }
+
+    public static boolean createProduct(ProductInfo pi) {
+        return Product.create(pi.getName(), pi.getDescription(), pi.getPrice(), pi.getStock(), pi.getCategoryId());
+    }
+    public static boolean updateProduct(ProductInfo pi) {
+        return Product.update(pi.getId(), pi.getName(), pi.getDescription(),
+                pi.getPrice(), pi.getStock(), pi.getCategoryId());
+    }
+    public static boolean deleteProduct(int productId) {
+        return Product.delete(productId);
+    }
+
 }
