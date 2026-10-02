@@ -10,14 +10,16 @@ import java.util.List;
 public class Order {
     private int id;
     private final int userId;
+    private String username;
     private LocalDateTime orderDate;
     private final double totalPrice;
     private String status;
     private List<OrderItem> items;
 
-    protected Order(int id, int userId, LocalDateTime orderDate, double totalPrice, String status, List<OrderItem> items) {
+    protected Order(int id, int userId, String username, LocalDateTime orderDate, double totalPrice, String status, List<OrderItem> items) {
         this.id = id;
         this.userId = userId;
+        this.username = username;
         this.orderDate = orderDate;
         this.totalPrice = totalPrice;
         this.status = status;
@@ -30,6 +32,9 @@ public class Order {
         this.items = items;
     }
 
+    public static List<Order> getAllOrders() {return OrderDB.getAllOrders();}
+    public static List<Order> getOrdersByUserId(int userId) {return OrderDB.getOrdersByUserId(userId);}
+    public static boolean packOrder(int orderId) {return OrderDB.packOrder(orderId);}
     public static boolean placeOrder(int userId, Cart cart) {
         Order order = createOrder(userId, cart);
         return OrderDB.placeOrder(order);
@@ -53,6 +58,9 @@ public class Order {
     public int getUserId() {
         return userId;
     }
+    public String getUsername() {
+        return username;
+    }
 
     public LocalDateTime getOrderDate() {
         return orderDate;
@@ -68,5 +76,9 @@ public class Order {
 
     public List<OrderItem> getItems() {
         return Collections.unmodifiableList(items);
+    }
+
+    public void addItem(OrderItem item) {
+        this.items.add(item);
     }
 }

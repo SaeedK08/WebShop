@@ -4,13 +4,15 @@ public class OrderItem {
     private int id;
     private int orderId;
     private final int productId;
+    private String productName;
     private final int quantity;
     private final double unitPrice;
 
-    protected OrderItem(int id, int orderId, int productId, int quantity, double unitPrice) {
+    protected OrderItem(int id, int orderId, int productId, String productName, int quantity, double unitPrice) {
         this.id = id;
         this.orderId = orderId;
         this.productId = productId;
+        this.productName = productName;
         this.quantity = quantity;
         this.unitPrice = unitPrice;
     }
@@ -31,6 +33,10 @@ public class OrderItem {
 
     public int getProductId() {
         return productId;
+    }
+
+    public String getProductName() {
+        return productName;
     }
 
     public int getQuantity() {

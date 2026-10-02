@@ -5,6 +5,19 @@
 <head>
     <meta charset="UTF-8">
     <title>Products - WebShop</title>
+    <style>
+        dialog::backdrop {
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+        dialog {
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            padding: 20px;
+            width: 80%;
+            max-width: 750px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.25);
+        }
+    </style>
 </head>
 <body>
     <!-- Användarmeny & Navigering -->
@@ -13,6 +26,19 @@
             <c:choose>
                 <c:when test="${not empty sessionScope.currentUser}">
                     <span>Signed in as: <strong><c:out value="${sessionScope.currentUser.username}" /></strong> (<c:out value="${sessionScope.currentUser.role}" />)</span>
+
+                    <!-- My Orders Popup Button -->
+                    <button type="button" onclick="document.getElementById('ordersDialog').showModal()"
+                            style="margin-left: 12px; padding: 4px 10px; cursor: pointer; border-radius: 3px; border: 1px solid #666; background-color: #f7f7f7;">
+                        📦 My Orders
+                    </button>
+
+                    <c:if test="${sessionScope.currentUser.staff || sessionScope.currentUser.admin}">
+                        <a href="${pageContext.request.contextPath}/staff"
+                           style="margin-left: 12px; padding: 4px 8px; background-color: #007bff; color: white; text-decoration: none; border-radius: 3px; font-size: 0.9em;">
+                            Staff Panel
+                        </a>
+                    </c:if>
 
                     <c:if test="${sessionScope.currentUser.admin}">
                         <a href="${pageContext.request.contextPath}/admin"
@@ -112,5 +138,60 @@
             </c:forEach>
         </tbody>
     </table>
+
+    <!-- ================= MY ORDERS POPUP MODAL ================= -->
+    <dialog id="ordersDialog">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+            <h2 style="margin: 0;">My Orders</h2>
+            <button type="button" onclick="document.getElementById('ordersDialog').close()" style="cursor: pointer; font-size: 16px;">✕</button>
+        </div>
+        <hr/>
+
+        <div style="max-height: 400px; overflow-y: auto; margin-top: 15px;">
+            <c:choose>
+                <c:when test="${empty orders}">
+                    <p>You have no registered orders.</p>
+                </c:when>
+                <c:otherwise>
+                    <table border="1" cellpadding="6" cellspacing="0" style="border-collapse: collapse; width: 100%;">
+                        <tr style="background-color: #f9f9f9;">
+                            <th>Order #</th>
+                            <th>Date</th>
+                            <th>Total</th>
+                            <th>Status</th>
+                            <th>Details</th>
+                        </tr>
+                        <c:forEach var="o" items="${orders}">
+                            <tr>
+                                <td align="center">#<c:out value="${o.id}" /></td>
+                                <td><c:out value="${o.orderDate}" /></td>
+                                <td><c:out value="${o.totalPrice}" /> SEK</td>
+                                <td align="center">
+                                    <span style="font-weight: bold; color: ${o.status == 'PENDING' ? '#d39e00' : '#28a745'};">
+                                        <c:out value="${o.status}" />
+                                    </span>
+                                </td>
+                                <td>
+                                    <ul style="margin: 0; padding-left: 18px;">
+                                        <c:forEach var="item" items="${o.items}">
+                                            <li>
+                                                <c:out value="${item.quantity}" />x
+                                                <c:out value="${item.productName}" />
+                                                (<c:out value="${item.unitPrice}" /> SEK)
+                                            </li>
+                                        </c:forEach>
+                                    </ul>
+                                </td>
+                            </tr>
+                        </c:forEach>
+                    </table>
+                </c:otherwise>
+            </c:choose>
+        </div>
+
+        <div style="text-align: right; margin-top: 15px;">
+            <button type="button" onclick="document.getElementById('ordersDialog').close()" style="padding: 6px 14px; cursor: pointer;">Close</button>
+        </div>
+    </dialog>
 </body>
 </html>
