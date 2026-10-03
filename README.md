@@ -1,82 +1,219 @@
-````mermaid
+## Class Diagram
+
+Architecture overview of the webshop application, showing the three main layers:
+
+- **Controllers** – handle incoming requests (`CartController`, `StaffController`, `ProductController`, `AdminController`, `LoginController`)
+- **Services** – business logic (`OrderService`, `ProductService`, `AdminUserService`)
+- **DB layer** – data access (`OrderDB`, `ProductDB`, `DBManager`)
+
+---
+
+<br></br>
+
+```mermaid
+
 classDiagram
     direction TB
 
-    %% CONTROLLERS
-    class CartController
-    class StaffController
-    class ProductController
-    class AdminController
-    class LoginController
-
-    %% SERVICES
-    class ProductService {
-        +getAllProducts() List
-        +getProductById(productId) ProductInfo
-        +createProduct(ProductInfo) boolean
-        +updateProductStock(productId, stock) boolean
-    }
-    class OrderService {
-        +placeOrder(userId, CartInfo) boolean
-        +getAllOrders() List
-        +getOrdersByUserId(userId) List
-        +packOrder(orderId) boolean
-    }
-    class AdminUserService {
-        +getAllUsers() List
-        +changeUserRole(userId, newRole) boolean
-    }
-
-    %% DAOs & DB
-    class DBManager {
-        +getConnection() Connection
-    }
-    class ProductDB {
-        +getAllProducts() List
-        +updateProductStock(productId, stock) boolean
-    }
-    class OrderDB {
-        +placeOrder(Order) boolean
-        +packOrder(orderId) boolean
-    }
-    class UserDB {
-        +validateUser(username, password) User
+    %% ==========================================
+    %% 1. PRESENTATION LAYER
+    %% ==========================================
+    namespace 1_Presentation_Layer {
+        class JSP_Views {
+            <<Views>>
+            cart.jsp
+            product.jsp
+            staff.jsp
+            admin.jsp
+            login.jsp
+        }
+        class CartController {
+            +doGet(req, resp)
+            +doPost(req, resp)
+        }
+        class ProductController {
+            +doGet(req, resp)
+            +doPost(req, resp)
+        }
+        class StaffController {
+            +doGet(req, resp)
+            +doPost(req, resp)
+        }
+        class AdminController {
+            +doGet(req, resp)
+            +doPost(req, resp)
+        }
+        class LoginController {
+            +doGet(req, resp)
+            +doPost(req, resp)
+        }
+        class OrderController {
+            +doGet(req, resp)
+            +doPost(req, resp)
+        }
     }
 
-    %% MODELS
-    class Product {
-        -int id
-        -String name
-        -int stock
-    }
-    class Order {
-        -int id
-        -String status
-        -List items
-    }
-    class OrderItem {
-        -int productId
-        -int quantity
-    }
-    class User {
-        -String username
-        -String role
+    %% ==========================================
+    %% 2. DTO LAYER
+    %% ==========================================
+    namespace 2_DTO_Layer {
+        class CartInfo { <<DTO>> }
+        class ProductInfo { <<DTO>> }
+        class OrderInfo { <<DTO>> }
+        class UserInfo { <<DTO>> }
+        class CategoryInfo { <<DTO>> }
     }
 
+    %% ==========================================
+    %% 3. BUSINESS LOGIC (SERVICES)
+    %% ==========================================
+    namespace 3_Service_Layer {
+        class CartService {
+            +addProductToCart()$
+            +updateQuantity()$
+        }
+        class ProductService {
+            +getAllProducts()$
+            +updateProductStock()$
+        }
+        class OrderService {
+            +placeOrder()$
+            +packOrder()$
+        }
+        class AdminUserService {
+            +getAllUsers()$
+            +changeUserRole()$
+        }
+        class CategoryService {
+            +getAllCategories()$
+        }
+        class LoginService {
+            +authenticateUser()$
+        }
+    }
+
+    %% ==========================================
+    %% 4. DOMAIN MODELS
+    %% ==========================================
+    namespace 4_Domain_Model_Layer {
+        class Cart {
+            +addItem()
+            +removeItem()
+            +getTotalCartPrice()
+        }
+        class CartItem {
+            -int id
+            -int quantity
+            +getTotalPrice()
+        }
+        class Product {
+            -int id
+            -String name
+            -double price
+            -int stock
+        }
+        class Order {
+            -int id
+            -int userId
+            -String status
+            -double totalPrice
+        }
+        class OrderItem {
+            -int productId
+            -int quantity
+            -double unitPrice
+        }
+        class User {
+            -int id
+            -String username
+            -String role
+        }
+        class Category {
+            -int id
+            -String name
+        }
+    }
+
+    %% ==========================================
+    %% 5. PERSISTENCE LAYER (DAOs & DB)
+    %% ==========================================
+    namespace 5_Persistence_Layer {
+        class ProductDB {
+            +getAllProducts()$
+            +updateProductStock()$
+        }
+        class OrderDB {
+            +placeOrder()$
+            +packOrder()$
+        }
+        class UserDB {
+            +getAllUsers()$
+            +validateUser()$
+        }
+        class CategoryDB {
+            +getAllCategories()$
+        }
+        class DBManager {
+            +getConnection()$
+        }
+    }
+
+    %% ==========================================
     %% RELATIONSHIPS
-    Product <|-- ProductDB
-    Order <|-- OrderDB
-    Order *-- OrderItem
+    %% ==========================================
+
+    %% HTTP Flow
+    JSP_Views ..> CartController : HTTP Req/Res
+    JSP_Views ..> OrderController : HTTP Req/Res
     
-    CartController --> OrderService
-    StaffController --> OrderService
-    StaffController --> ProductService
-    AdminController --> AdminUserService
-    
-    ProductService ..> Product
-    OrderService ..> Order
-    AdminUserService ..> User
-    
-    ProductDB ..> DBManager
-    OrderDB ..> DBManager
-    UserDB ..> DBManager`
+    %% --- DTO DATA FLOW (UI -> DTO) ---
+    JSP_Views ..> CartInfo : reads & displays
+    JSP_Views ..> ProductInfo : reads & displays
+    JSP_Views ..> OrderInfo : reads & displays
+
+    %% --- DTO DATA FLOW (Controllers -> DTO) ---
+    CartController ..> CartInfo : binds & passes
+    ProductController ..> ProductInfo : binds & passes
+    StaffController ..> OrderInfo : binds & passes
+    AdminController ..> UserInfo : binds & passes
+    OrderController ..> OrderInfo : binds & passes
+
+    %% --- DTO DATA FLOW (Services -> DTO) ---
+    %% Genom att vända på koden (<..) tvingas DTO-boxen uppåt i layouten!
+    CartInfo <.. CartService : consumes & returns
+    ProductInfo <.. ProductService : consumes & returns
+    OrderInfo <.. OrderService : consumes & returns
+    UserInfo <.. AdminUserService : consumes & returns
+    %% ---------------------
+
+    %% Controllers call Services
+    CartController --> CartService : calls
+    ProductController --> ProductService : calls
+    StaffController --> OrderService : calls
+    StaffController --> ProductService : calls
+    AdminController --> AdminUserService : calls
+    LoginController --> LoginService : calls
+    OrderController --> OrderService : calls
+
+    %% Services map to underlying Domain Models
+    CartService ..> Cart : maps to model
+    ProductService ..> Product : maps to model
+    OrderService ..> Order : maps to model
+    AdminUserService ..> User : maps to model
+
+    %% Domain Model relationships
+    Cart *-- CartItem : contains
+    Order *-- OrderItem : contains
+    Product --> Category : belongs to
+
+    %% Persistence implementation (DAOs extending Models)
+    Product <|-- ProductDB : extended by
+    Order <|-- OrderDB : extended by
+    User <|-- UserDB : extended by
+    Category <|-- CategoryDB : extended by
+
+    %% DAOs to DB
+    ProductDB --> DBManager : executes SQL
+    OrderDB --> DBManager : executes SQL
+    UserDB --> DBManager : executes SQL
+    CategoryDB --> DBManager : executes SQL
