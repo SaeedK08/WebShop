@@ -1,7 +1,9 @@
 package com.webshop.controller;
 
 import com.webshop.dto.CartInfo;
+import com.webshop.dto.ProductInfo;
 import com.webshop.service.CartService;
+import com.webshop.service.ProductService;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -9,7 +11,6 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
-import java.awt.image.AreaAveragingScaleFilter;
 import java.io.IOException;
 import java.util.ArrayList;
 
@@ -43,32 +44,55 @@ public class CartController extends HttpServlet {
             response.sendRedirect(request.getContextPath() + "/login");
             return;
         }
-        String action = request.getParameter("action");
         CartInfo cartInfo = (CartInfo) session.getAttribute("cartInfo");
         if (cartInfo == null) {
             cartInfo = new CartInfo(new ArrayList<>(), 0.0);
         }
 
         try {
+            CartInfo updated = null;
             int productId = Integer.parseInt(request.getParameter("productId"));
+            String action = request.getParameter("action");
+            String quantityParam = request.getParameter("quantity");
+            int quantity=0;
+            String redirectUrl = "/cart";
 
-            if ("add".equals(action)) {
-                int quantity = Integer.parseInt(request.getParameter("quantity"));
-                CartInfo updated = CartService.addProductToCart(cartInfo, productId, quantity);
+            if (quantityParam != null) {
+                quantity = Integer.parseInt(quantityParam);
+                if (quantity <= 0) action = "remove";
+            }
 
-                if (updated == null) {
-                    session.setAttribute("cartError", "Could not add item. Check available stock.");
-                } else {
-                    session.setAttribute("cartInfo", updated);
+            switch (action) {
+                case "add" -> {
+                    updated = CartService.addProductToCart(cartInfo, productId, quantity);
+                    if (updated == null) {
+                        session.setAttribute("cartError", "Could not add item. Check available stock.");
+                    } else {
+                        redirectUrl = "/products";
+                    }
                 }
-            } else if ("remove".equals(action)) {
-                CartInfo updated = CartService.removeCartItem(cartInfo, productId);
+                case "update" -> {
+                    updated = CartService.updateQuantity(cartInfo, productId, quantity);
+                    if (updated == null) {
+                        ProductInfo currentProduct = ProductService.getProductById(productId);
+                        session.setAttribute("cartError", "Only " + currentProduct.getStock() +
+                                " items of " + currentProduct.getName() + " are available in stock.");
+                    }
+                }
+                case "remove" -> {
+                    updated = CartService.removeCartItem(cartInfo, productId);
+                }
+            }
+
+            if (updated != null) {
                 session.setAttribute("cartInfo", updated);
             }
+            response.sendRedirect(request.getContextPath() + redirectUrl);
+
         } catch (NumberFormatException e) {
             session.setAttribute("cartError", "Invalid quantity or product identifier.");
+            response.sendRedirect(request.getContextPath() + "/cart");
         }
 
-        response.sendRedirect(request.getContextPath() + "/cart");
     }
 }

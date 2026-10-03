@@ -22,12 +22,26 @@ public class ProductService {
         return dtoList;
     }
 
+    public static ProductInfo getProductById(int productId) {
+        Product product = Product.getProductById(productId);
+        return new ProductInfo(product.getId(),
+                                product.getName(),
+                                product.getDescription(),
+                                product.getPrice(),
+                                product.getStock(),
+                                product.getCategoryId(),
+                                product.getCategoryName());
+    }
+
     public static boolean createProduct(ProductInfo pi) {
         return Product.create(pi.getName(), pi.getDescription(), pi.getPrice(), pi.getStock(), pi.getCategoryId());
     }
     public static boolean updateProduct(ProductInfo pi) {
         return Product.update(pi.getId(), pi.getName(), pi.getDescription(),
                 pi.getPrice(), pi.getStock(), pi.getCategoryId());
+    }
+    public static boolean updateProductStock(int productId, int stock) {
+        return Product.updateStock(productId, stock);
     }
     public static boolean deleteProduct(int productId) {
         return Product.delete(productId);

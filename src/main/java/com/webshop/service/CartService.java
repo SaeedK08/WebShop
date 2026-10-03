@@ -11,20 +11,17 @@ import java.util.List;
 
 public class CartService {
 
-    public static CartInfo addProductToCart(CartInfo cartInfo, int productId, int quantity) {
-        if (quantity <= 0) return null;
-
-        Product productToAdd = Product.getProductById(productId);
-        if (productToAdd == null) return null;
+    private static Cart toModel(CartInfo cartInfo) {
         Cart cart = new Cart();
-        for (CartItemInfo cinfo : cartInfo.getItems()) {
-            cart.addItem(cinfo.getProductId(), cinfo.getProductName(), cinfo.getPrice(), cinfo.getQuantity());
+        if (cartInfo != null && cartInfo.getItems() != null) {
+            for (CartItemInfo cinfo : cartInfo.getItems()) {
+                cart.addItem(cinfo.getProductId(), cinfo.getProductName(), cinfo.getPrice(), cinfo.getQuantity());
+            }
         }
-        int currentQuantityInCart = cart.getQuantityForProduct(productToAdd.getId());
-        if (currentQuantityInCart + quantity > productToAdd.getStock())  return null;
+        return cart;
+    }
 
-        cart.addItem(productToAdd.getId(), productToAdd.getName(), productToAdd.getPrice(), quantity);
-
+    private static CartInfo toDto(Cart cart) {
         List<CartItemInfo> updated = new ArrayList<>();
         double totalPrice = 0.0;
         for (CartItem ci : cart.getItems()) {
@@ -34,21 +31,40 @@ public class CartService {
         return new CartInfo(updated, totalPrice);
     }
 
-    // Remove the whole item, does not respect quantity
-    public static CartInfo removeCartItem (CartInfo cartInfo, int productId) {
+    public static CartInfo addProductToCart(CartInfo cartInfo, int productId, int quantity) {
+        if (quantity <= 0) return null;
+
+        Product productToAdd = Product.getProductById(productId);
+        if (productToAdd == null) return null;
+
+        Cart cart = toModel(cartInfo);
+        int currentQuantityInCart = cart.getQuantityForProduct(productToAdd.getId());
+
+        if (currentQuantityInCart + quantity > productToAdd.getStock()) return null;
+
+        cart.addItem(productToAdd.getId(), productToAdd.getName(), productToAdd.getPrice(), quantity);
+
+        return toDto(cart);
+    }
+
+    public static CartInfo updateQuantity(CartInfo cartInfo, int productId, int quantity) {
+        Product productToUpdate = Product.getProductById(productId);
+        if (productToUpdate == null || quantity > productToUpdate.getStock()) {
+            return null;
+        }
+
         Cart cart = new Cart();
         for (CartItemInfo cinfo : cartInfo.getItems()) {
-            cart.addItem(cinfo.getProductId(), cinfo.getProductName(), cinfo.getPrice(), cinfo.getQuantity()); //[cite: 13]
+            int qtyToSet = (cinfo.getProductId() == productId) ? quantity : cinfo.getQuantity();
+            cart.addItem(cinfo.getProductId(), cinfo.getProductName(), cinfo.getPrice(), qtyToSet);
         }
 
+        return toDto(cart);
+    }
+
+    public static CartInfo removeCartItem(CartInfo cartInfo, int productId) {
+        Cart cart = toModel(cartInfo);
         cart.removeItem(productId);
-
-        List<CartItemInfo> updated = new ArrayList<>();
-        double totalPrice = 0.0;
-        for (CartItem ci : cart.getItems()) {
-            updated.add(new CartItemInfo(ci.getId(), ci.getName(), ci.getPrice(), ci.getQuantity())); //[cite: 13]
-            totalPrice += ci.getTotalPrice();
-        }
-        return new CartInfo(updated, totalPrice);
+        return toDto(cart);
     }
 }

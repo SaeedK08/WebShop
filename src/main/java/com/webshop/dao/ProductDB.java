@@ -131,6 +131,19 @@ public class ProductDB extends Product {
             return false;
         }
     }
+
+    public static boolean updateProductStock(int productId, int stock) {
+        Connection conn = DBManager.getConnection();
+        String sql = "UPDATE Product SET stock = ? WHERE id = ?";
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, stock);
+            ps.setInt(2, productId);
+            return ps.executeUpdate() == 1;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
 }
 
 

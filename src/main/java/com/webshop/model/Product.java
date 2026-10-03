@@ -38,6 +38,7 @@ public class Product {
     public static boolean update(int id, String name, String description, double price, int stock, Integer categoryId) {
         return ProductDB.updateProduct(new Product(id, name, description, price, stock, categoryId, null));
     }
+    public static boolean updateStock(int productId, int stock) {return ProductDB.updateProductStock(productId, stock);}
     public static boolean delete(int productId) {
         return ProductDB.deleteProduct(productId);
     }

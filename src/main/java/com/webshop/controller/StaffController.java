@@ -3,6 +3,7 @@ package com.webshop.controller;
 import com.webshop.dto.OrderInfo;
 import com.webshop.dto.UserInfo;
 import com.webshop.service.OrderService;
+import com.webshop.service.ProductService;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -25,32 +26,49 @@ public class StaffController extends HttpServlet {
             return;
         }
         req.setAttribute("orders", OrderService.getAllOrders());
+        req.setAttribute("products", ProductService.getAllProducts());
         req.getRequestDispatcher("/WEB-INF/views/staff.jsp").forward(req, resp);
     }
     protected void doPost(HttpServletRequest req, HttpServletResponse resp)
         throws ServletException, IOException {
-        HttpSession session = req.getSession();
-        UserInfo currentUser = (UserInfo) session.getAttribute("currentUser");
-        if (currentUser == null || !currentUser.isStaff()) {
-            resp.sendError(HttpServletResponse.SC_FORBIDDEN);
-            return;
-        }
-        String action = req.getParameter("action");
-        if ("packOrder".equals(action)) {
-            boolean success = false;
-            try {
-                int orderId = Integer.parseInt(req.getParameter("orderId"));
-                success = OrderService.packOrder(orderId);
-                if (success) {
-                    session.setAttribute("staffSuccess", "Order #" + orderId + " marked as PACKED.");
-                } else {
-                    session.setAttribute("staffError", "Failed to pack order #" + orderId + ".");
-                }
-            } catch (Exception e) {
-                session.setAttribute("staffError", "Invalid order ID.");
+            HttpSession session = req.getSession();
+            UserInfo currentUser = (UserInfo) session.getAttribute("currentUser");
+            if (currentUser == null || !currentUser.isStaff()) {
+                resp.sendError(HttpServletResponse.SC_FORBIDDEN);
+                return;
             }
-        }
-        resp.sendRedirect(req.getContextPath() + "/staff");
+            String action = req.getParameter("action");
+            boolean success = false;
+
+            try {
+                switch (action) {
+                    case "packOrder":
+                        int orderId = Integer.parseInt(req.getParameter("orderId"));
+                        success = OrderService.packOrder(orderId);
+                        if (success) {
+                            session.setAttribute("staffSuccess", "Order #" + orderId + " marked as PACKED.");
+                        } else {
+                            session.setAttribute("staffError", "Failed to pack order #" + orderId + ".");
+                        }
+                        break;
+                    case "updateStock":
+                        int productId = Integer.parseInt(req.getParameter("productId"));
+                        int stock = Integer.parseInt(req.getParameter("stock"));
+                        success = ProductService.updateProductStock(productId, stock);
+                        if (success) {
+                            session.setAttribute("staffSuccess", "Stock updated for " + ProductService.getProductById(productId).getName());
+                        } else {
+                            session.setAttribute("staffError", "Failed to update stock for " + ProductService.getProductById(productId).getName());
+                        }
+                        break;
+                    default:
+                        break;
+                }
+            } catch (Exception e){
+                    session.setAttribute("staffError", "Invalid order ID or stock vlaue.");
+            }
+
+            resp.sendRedirect(req.getContextPath() + "/staff");
     }
 
 
