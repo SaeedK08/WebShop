@@ -2,7 +2,7 @@
 <html lang="sv">
 <head>
     <meta charset="utf-8">
-    <title>Webshop Arkitektur - Redovisning</title>
+    <title>Webshop - Redovisning</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
     <!-- Reveal.js CSS -->
@@ -35,90 +35,85 @@
     </style>
 </head>
 <body>
-    <div class="reveal">
-        <div class="slides">
+<div class="reveal">
+    <div class="slides">
 
-            <!-- SLIDE 1: Titel -->
-            <section>
-                <h2>MVC Webshop</h2>
-                <p>Arkitektur, Dataintegritet och Säkerhet i Java</p>
-                <br>
-                <p><small>Saeed Kassab & Kasiem Al-Mshabbak</small></p>
-            </section>
+        <!-- SLIDE 1: Titel -->
+        <section>
+            <h2>Webshop i Java Servlet och JSP</h2>
+            <p>3-skiktsarkitektur, MVC och Dataintegritet</p>
+            <br>
+            <p><small>Redovisning av laboration</small></p>
+        </section>
 
-            <!-- SLIDE 2: Arkitekturen (Lagren) -->
-            <section>
-                <h3>Den Skiktade Arkitekturen</h3>
-                <div class="slide-content">
-                    <p>Systemet bygger på en strikt 5-lagers MVC-arkitektur för att separera ansvar:</p>
-                    <ul>
-                        <li><span class="highlight">1. Presentation:</span> Servlets (Controllers) och JSP (Vyer). Hanterar HTTP och sessioner.</li>
-                        <li><span class="highlight">2. DTO-lager:</span> Data Transfer Objects agerar budbärare.</li>
-                        <li><span class="highlight">3. Service-lager:</span> Kapslar in all affärslogik (t.ex. <code>OrderService</code>, <code>CartService</code>).</li>
-                        <li><span class="highlight">4. Domänmodeller:</span> Entiteter (<code>Product</code>, <code>Order</code>) med intern logik.</li>
-                        <li><span class="highlight">5. Persistence:</span> DAOs (<code>OrderDB</code>, <code>ProductDB</code>) som ärver modellerna och sköter all SQL.</li>
-                    </ul>
-                </div>
-            </section>
+        <!-- SLIDE 2: 3-skiktsarkitekturen -->
+        <section>
+            <h3>Strikt 3-skiktsarkitektur</h3>
+            <div class="slide-content">
+                <p>För att få en hållbar struktur i kodbasen valde vi att bygga systemet utifrån en tydlig 3-skiktsarkitektur:</p>
+                <ul>
+                    <li><span class="highlight">1. Presentationsskiktet:</span> Hanterar HTTP-anrop, sessioner och vyer (JSP och Controllers).</li>
+                    <li><span class="highlight">2. Affärslogikskiktet (BO):</span> Innehåller våra Services och Domänmodeller. Här sker beräkningar och validering.</li>
+                    <li><span class="highlight">3. Datalagringsskiktet:</span> Våra DAO-klasser (t.ex. <code>OrderDB</code>) som hanterar all SQL och kommunikation med databasen.</li>
+                </ul>
+            </div>
+        </section>
 
-            <!-- SLIDE 3: DTO som bro -->
-            <section>
-                <h3>Varför DTO:er?</h3>
-                <div class="slide-content">
-                    <p>För att bygga ett säkert system har vi frikopplat databasen från användargränssnittet helt.</p>
-                    <ul>
-                        <li>Inga domänmodeller (med kopplingar till DAOs) läcker någonsin upp till vyerna.</li>
-                        <li>Controllers tar emot HTTP-förfrågningar, binder data till DTO:er (t.ex. <code>CartInfo</code>) och skickar dem till Services.</li>
-                        <li>Services processar datan, interagerar med domänmodellerna och returnerar nya DTO:er tillbaka.</li>
-                        <li><strong>Resultat:</strong> Renare vyer (JSP) och obefintlig risk att användaren råkar manipulera databasklasser direkt.</li>
-                    </ul>
-                </div>
-            </section>
+        <!-- SLIDE 3: MVC och DTO -->
+        <section>
+            <h3>MVC-mönstret och DTO:er</h3>
+            <div class="slide-content">
+                <p>Det primära fokuset i projektet var att lära sig implementera MVC i praktiken och separera systemets olika ansvarsområden.</p>
+                <ul>
+                    <li><strong>Controllers</strong> agerar endast trafikpoliser. De tar emot data och delegerar direkt till rätt Service.</li>
+                    <li>För att undvika att databasmodeller läcker upp till vyerna använder vi <strong>Data Transfer Objects (DTO)</strong>.</li>
+                    <li>Affärslagret paketerar om data till DTO:er (t.ex. <code>CartInfo</code>) innan det skickas till vyerna, vilket ger ett frikopplat och säkrare system.</li>
+                </ul>
+            </div>
+        </section>
 
-            <!-- SLIDE 4: Problemlösning & Race conditions -->
-            <section>
-                <h3>Transaktioner & Race Conditions</h3>
-                <div class="slide-content">
-                    <p>En av de största utmaningarna var utcheckningen (<code>OrderDB.placeOrder</code>).</p>
-                    <ul>
-                        <li><strong>Problemet:</strong> Om vi enbart validerar lagersaldo i kundvagnen (Service) kan en annan användare hinna köpa sista varan under tiden.</li>
-                        <li><strong>Lösningen:</strong> Defence in Depth.</li>
-                        <li>Databasen tillåter endast köp via atomära operationer: <code>UPDATE Product SET stock = stock - ? WHERE id = ? AND stock >= ?</code>.</li>
-                        <li>Misslyckas uppdateringen (returnerar 0) kastar vi ett <code>SQLException</code> som automatiskt rullar tillbaka (<em>rollback</em>) hela transaktionen och avbryter ordern.</li>
-                    </ul>
-                </div>
-            </section>
+        <!-- SLIDE 4: Transaktioner & Distribuerade System -->
+        <section>
+            <h3>Design för Distribuerade System</h3>
+            <div class="slide-content">
+                <p>Vid designen av systemet krävdes noggrannhet kring hur data hanteras när flera användare interagerar samtidigt, särskilt vid utcheckning.</p>
+                <ul>
+                    <li><strong>Dataintegritet:</strong> Vi måste säkerställa att lagersaldot aldrig kan bli negativt vid samtidiga köp (race conditions).</li>
+                    <li><strong>Lösning:</strong> Vi genomför utcheckningen med atomära SQL-uppdateringar (<code>stock = stock - ? AND stock >= ?</code>).</li>
+                    <li>Om en uppdatering misslyckas – exempelvis om lagret precis tog slut – avbryts operationen och vi gör en komplett <strong>rollback</strong> av databastransaktionen.</li>
+                </ul>
+            </div>
+        </section>
 
-            <!-- SLIDE 5: Diagrammet -->
-            <section>
-                <h3>Systemöversikt</h3>
-                <p style="font-size: 0.6em;">Klassdiagrammet visar det strikta envägsflödet från UI ner till Databasen.</p>
-                <div class="diagram-container">
-                    <!-- Refererar till din SVG i samma mapp -->
-                    <img src="class_diagram.svg" alt="UML Klassdiagram">
-                </div>
-                <p style="font-size: 0.5em; margin-top: 10px;">(Skrolla i boxen för att granska detaljer)</p>
-            </section>
+        <!-- SLIDE 5: Diagrammet -->
+        <section>
+            <h3>Systemöversikt</h3>
+            <p style="font-size: 0.6em;">Klassdiagrammet illustrerar det linjära flödet från UI, via DTO:er och Services, ner till Databasen.</p>
+            <div class="diagram-container">
+                <img src="class_diagram.svg" alt="UML Klassdiagram">
+            </div>
+            <p style="font-size: 0.5em; margin-top: 10px;">(Utdrag ur det kompletta klassdiagrammet)</p>
+        </section>
 
-            <!-- SLIDE 6: Avslutning -->
-            <section>
-                <h2>Tack!</h2>
-                <p>Frågor på arkitekturen eller transaktionshanteringen?</p>
-            </section>
+        <!-- SLIDE 6: Avslutning -->
+        <section>
+            <h2>Tack för oss</h2>
+            <p>Frågor om implementationen eller arkitekturen?</p>
+        </section>
 
-        </div>
     </div>
+</div>
 
-    <!-- Reveal.js Scripts -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/reveal.min.js"></script>
-    <script>
-        Reveal.initialize({
-            hash: true,
-            controls: true,
-            progress: true,
-            slideNumber: 'c/t',
-            transition: 'slide'
-        });
-    </script>
+<!-- Reveal.js Scripts -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/reveal.min.js"></script>
+<script>
+    Reveal.initialize({
+        hash: true,
+        controls: true,
+        progress: true,
+        slideNumber: 'c/t',
+        transition: 'slide'
+    });
+</script>
 </body>
 </html>
