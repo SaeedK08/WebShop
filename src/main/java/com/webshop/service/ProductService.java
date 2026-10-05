@@ -37,10 +37,12 @@ public class ProductService {
         return Product.create(pi.getName(), pi.getDescription(), pi.getPrice(), pi.getStock(), pi.getCategoryId());
     }
     public static boolean updateProduct(ProductInfo pi) {
+        if (pi.stock() <= 0) return false;
         return Product.update(pi.getId(), pi.getName(), pi.getDescription(),
                 pi.getPrice(), pi.getStock(), pi.getCategoryId());
     }
     public static boolean updateProductStock(int productId, int stock) {
+        if (stock <= 0) return false;
         return Product.updateStock(productId, stock);
     }
     public static boolean deleteProduct(int productId) {

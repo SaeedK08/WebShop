@@ -14,7 +14,7 @@ CREATE TABLE Product (
      name VARCHAR(100) NOT NULL,
      description VARCHAR(200),
      price DECIMAL(10,2) NOT NULL,
-     stock INT NOT NULL,
+     stock INT NOT NULL CHECK (stock>=0),
      categoryId INT NULL,
      FOREIGN KEY (categoryId) REFERENCES Category(id) ON DELETE SET NULL
    );
@@ -41,6 +41,6 @@ CREATE TABLE OrderItem (
     FOREIGN KEY (orderId) REFERENCES `Order`(id) ON DELETE CASCADE,
     FOREIGN KEY (productId) REFERENCES Product(id)
 );
-INSERT INTO Product (name, description, price, stock) VALUES ('Coffee', 'Swedish coffee', 49.00, 4), ('Tea', 'English tee with berry taste', 39.00, 10);
+INSERT INTO Product (name, description, price, stock) VALUES ('Coffee', 'Swedish coffee', 49.00, 5), ('Tea', 'English tee with berry taste', 39.00, 10);
 
 INSERT INTO User (username, password, role) VALUES ('saeed', 'password123', 'CUSTOMER'), ('admin', 'admin123', 'ADMIN'),('kasiem', 'kasiem123', 'STAFF');

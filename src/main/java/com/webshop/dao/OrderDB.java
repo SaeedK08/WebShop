@@ -44,7 +44,7 @@ public class OrderDB extends Order {
         Connection conn = DBManager.getConnection();
         String sqlOrder = "INSERT INTO `Order` (userId, totalPrice) VALUES (?,?)";
         String sqlOrderItem = "INSERT INTO OrderItem (orderId, productId, quantity, unitPrice) VALUES (?,?,?,?)";
-        String sqlUpdateStock = "UPDATE Product SET stock = stock - ? WHERE id = ?";
+        String sqlUpdateStock = "UPDATE Product SET stock = stock - ? WHERE id = ? AND stock >= ?";
         int orderId;
         try {
             conn.setAutoCommit(false);
@@ -75,7 +75,10 @@ public class OrderDB extends Order {
                 for (OrderItem item : order.getItems()) {
                     ps.setInt(1, item.getQuantity());
                     ps.setInt(2, item.getProductId());
-                    ps.executeUpdate();
+                    ps.setInt(3, item.getQuantity());
+                    if (ps.executeUpdate() == 0) {
+                        throw new SQLException("Insufficient stock for product: " + item.getProductName());
+                    }
                 }
             }
             conn.commit();
