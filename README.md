@@ -1,12 +1,33 @@
-## Class Diagram
+## Requirements
+
+To build and run this project locally, you need the following environment:
+
+* **Java Development Kit (JDK):** Version 11 or higher.
+* **Web Server / Servlet Container:** Apache Tomcat 9. *(Note: The project uses the `javax.servlet` package, which requires Tomcat 9 or older. It will not work out-of-the-box on Tomcat 10+).*
+* **Dependency Management:** Maven (automatically handles dependencies like the MySQL Connector/J JDBC driver via `pom.xml`).
+* **Database Environment:** Docker and Docker Compose.
+* **IDE:** IntelliJ IDEA (Ultimate highly recommended for built-in Tomcat support) or equivalent.
+* **IDE extensions/plugins:** SmartTomcat in InteliJ, surely similiar extensions can be found in other IDEs.
+
+
+<br></br>
+## Setup & Usage
+
+### Initialize the Database
+The database environment is fully containerized. To start the MySQL database, navigate to the project root in your terminal and run:
+
+```bash
+$ docker compose up -d
+```
+
+<br></br>
+## Class diagram
 
 Architecture overview of the webshop application, showing the three main layers:
 
 - **Controllers** – handle incoming requests (`CartController`, `StaffController`, `ProductController`, `AdminController`, `LoginController`)
 - **Services** – business logic (`OrderService`, `ProductService`, `AdminUserService`)
 - **DB layer** – data access (`OrderDB`, `ProductDB`, `DBManager`)
-
----
 
 <br></br>
 
